@@ -91,9 +91,9 @@ import {
   Undo,
   Redo,
 } from "@mui/icons-material";
-import WorkingMeasurementMap from "./WorkingMeasurementMap";
-import MapSearchBox from "./MapSearchBox";
-import ProfileMenu from "./2.NavbarPage/2.4 ProfileMenu";
+import WorkingMeasurementMap from "../WorkingMeasurementMap";
+import MapSearchBox from "./map/MapSearchBox";
+import ProfileMenu from "../layout/ProfileMenu";
 
 const GISProfessionalDashboard = () => {
   const theme = useTheme();

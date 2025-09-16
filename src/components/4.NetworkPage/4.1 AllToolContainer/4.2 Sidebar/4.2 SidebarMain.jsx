@@ -17,7 +17,7 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { logout } from "../../../../redux/authSlice";
+import { logout } from "../../../../redux/slices/authSlice";
 import { SidebarMenuItem } from "./4.2.1 SidebarMenuItem";
 import { UserProfile } from "./4.2.2 UserProfile";
 import { CollapseButton } from "./4.2.3 CollapseButton";

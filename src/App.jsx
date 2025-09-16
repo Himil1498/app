@@ -1,19 +1,20 @@
 // src/App.jsx
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { restoreSession } from "./redux/authSlice";
+import { restoreSession } from "./redux/slices/authSlice";
 import { Routes, Route, Navigate } from "react-router-dom";
 
-import LoginBox from "./components/1.LoginPage/1.1 LoginBoxMain";
-import Dashboard from "./components/3.DashboardPage/3.0 DashboardMain";
+import LoginBox from "./components/auth/LoginBox";
+import Dashboard from "./components/pages/dashboard/3.0 DashboardMain";
 import Network from "./components/4.NetworkPage/4.0 NetworkMain";
 import Administration from "./components/5.AdministrationPage/5.0 AdministrationMain";
-import Layout from "./components/2.NavbarPage/2.0 Layout";
-import ProtectedRoute from "./components/ProtectedRoute";
+import Layout from "./components/layout/Layout";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import "./App.css";
 import WorkingMeasurementMap from "./components/WorkingMeasurementMap";
-import QuickMapAccess from "./components/QuickMapAccess";
-import GISProfessionalDashboard from "./components/GISProfessionalDashboard";
+import QuickMapAccess from "./components/common/QuickMapAccess";
+import GISProfessionalDashboard from "./components/gis/GISProfessionalDashboard";
+import GISDashboard from "./components/gis/dashboard/GISDashboard";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -55,7 +56,7 @@ export default function App() {
         <Route
           path="/administration"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute requireAdmin={true}>
               <Layout>
                 <Administration />
               </Layout>
@@ -76,6 +77,14 @@ export default function App() {
           element={
             <ProtectedRoute>
               <GISProfessionalDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/gis-dashboard"
+          element={
+            <ProtectedRoute>
+              <GISDashboard />
             </ProtectedRoute>
           }
         />

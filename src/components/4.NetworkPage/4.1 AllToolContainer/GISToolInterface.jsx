@@ -116,7 +116,7 @@ import useGoogleMapWithIndia from "../../../hooks/useGoogleMapWithIndia";
 import useRegionAccess from "../../../hooks/useRegionAccess";
 import ProfileMenu from "../../2.NavbarPage/2.4 ProfileMenu";
 import { useDispatch } from "react-redux";
-import { logout } from "../../../redux/authSlice";
+import { logout } from "../../../redux/slices/authSlice";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 

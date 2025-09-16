@@ -85,7 +85,7 @@ import {
   Download,
 } from "@mui/icons-material";
 import useIndiaBoundary from "../hooks/useIndiaBoundary";
-import AddLocationForm from "./AddLocationForm";
+import AddLocationForm from "./common/AddLocationForm";
 
 // Add CSS keyframes for animations
 const animationKeyframes = `

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { login, restoreSession, clearMessage } from "../../redux/authSlice";
+import { login, restoreSession, clearMessages } from "../../redux/slices/authSlice";
 import {
   TextField,
   Button,
@@ -26,7 +26,7 @@ import {
   Lock,
   Login as LoginIcon,
 } from "@mui/icons-material";
-import LeftImage from "./1.2 LeftImage";
+import LeftImage from "./LeftImage";
 
 export default function LoginBox() {
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ export default function LoginBox() {
       setOpenSuccess(true);
       const timer = setTimeout(() => {
         navigate("/dashboard");
-        dispatch(clearMessage());
+        dispatch(clearMessages());
       }, 1500);
       return () => clearTimeout(timer);
     }

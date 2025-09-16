@@ -3,11 +3,11 @@ import { AppBar, Toolbar, Box, Avatar, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate, useLocation } from "react-router-dom";
-import Logo from "./2.2 Logo";
-import NavLinks from "./2.3 NavLinks";
-import ProfileMenu from "./2.4 ProfileMenu";
-import MobileDrawer from "./2.5 MobileDrawer";
-import { logout } from "../../redux/authSlice";
+import Logo from "./Logo";
+import NavLinks from "./NavLinks";
+import ProfileMenu from "./ProfileMenu";
+import MobileDrawer from "./MobileDrawer";
+import { logout } from "../../redux/slices/authSlice";
 
 const isDevMode =
   import.meta.env.VITE_USE_MOCK === "true" ||

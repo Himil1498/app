@@ -1,5 +1,5 @@
 // src/components/Layout.jsx
-import Navbar from "./2.1 NavbarMain";
+import Navbar from "./Navbar";
 import { Box } from "@mui/material";
 
 export default function Layout({ children }) {

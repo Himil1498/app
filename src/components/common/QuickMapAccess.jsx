@@ -30,22 +30,22 @@ const QuickMapAccess = () => {
 
   const actions = [
     {
-      icon: <Build />,
-      name: 'Working Distance Tool',
-      action: () => navigate('/workingMap'),
-      color: 'warning'
-    },
-    {
       icon: <Map />,
-      name: 'All GIS Tools',
-      action: () => navigate('/network/allToolContainer'),
-      color: 'info'
+      name: 'Professional GIS',
+      action: () => navigate('/gisProfessionalDashboard'),
+      color: 'primary'
     },
     {
       icon: <Timeline />,
       name: 'Network Tools',
       action: () => navigate('/network'),
       color: 'success'
+    },
+    {
+      icon: <Build />,
+      name: 'Measurement Tools',
+      action: () => navigate('/workingMap'),
+      color: 'secondary'
     },
   ];
 
