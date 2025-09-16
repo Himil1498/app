@@ -51,35 +51,20 @@ export const restoreSession = createAsyncThunk(
 // ---------------------------
 
 const getInitialState = () => {
-  try {
-    const storedUser = localStorage.getItem("currentUser");
-    const storedToken = localStorage.getItem("token");
-    const storedLoginTime = localStorage.getItem("loginTime");
-
-    return {
-      user: storedUser ? JSON.parse(storedUser) : null,
-      token: storedToken || null,
-      loginTime: storedLoginTime || null,
-      isAuthenticated: !!(storedUser && storedToken),
-      loading: false,
-      error: null,
-      message: null,
-    };
-  } catch (error) {
-    // If stored data is corrupted, clear it
-    localStorage.removeItem("currentUser");
-    localStorage.removeItem("token");
-    localStorage.removeItem("loginTime");
-    return {
-      user: null,
-      token: null,
-      loginTime: null,
-      isAuthenticated: false,
-      loading: false,
-      error: null,
-      message: null,
-    };
-  }
+  // Clear any stored session data on app start to force fresh login
+  localStorage.removeItem("currentUser");
+  localStorage.removeItem("token");
+  localStorage.removeItem("loginTime");
+  
+  return {
+    user: null,
+    token: null,
+    loginTime: null,
+    isAuthenticated: false,
+    loading: false,
+    error: null,
+    message: null,
+  };
 };
 
 const initialState = getInitialState();

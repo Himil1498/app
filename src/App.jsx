@@ -5,9 +5,9 @@ import { restoreSession } from "./redux/slices/authSlice";
 import { Routes, Route, Navigate } from "react-router-dom";
 
 import LoginBox from "./components/auth/LoginBox";
-import Dashboard from "./components/pages/dashboard/3.0 DashboardMain";
-import Network from "./components/4.NetworkPage/4.0 NetworkMain";
-import Administration from "./components/5.AdministrationPage/5.0 AdministrationMain";
+import Dashboard from "./components/features/dashboard/MainDashboard/3.0 DashboardMain";
+import Network from "./components/features/network/NetworkPage/4.0 NetworkMain";
+import Administration from "./components/features/administration/AdministrationPage/5.0 AdministrationMain";
 import Layout from "./components/layout/Layout";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import "./App.css";
@@ -19,9 +19,10 @@ import GISDashboard from "./components/gis/dashboard/GISDashboard";
 export default function App() {
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    dispatch(restoreSession());
-  }, [dispatch]);
+  // Removed automatic session restoration - users must login every time
+  // useEffect(() => {
+  //   dispatch(restoreSession());
+  // }, [dispatch]);
 
   return (
     <>

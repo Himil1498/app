@@ -94,6 +94,9 @@ import {
 import WorkingMeasurementMap from "../WorkingMeasurementMap";
 import MapSearchBox from "./map/MapSearchBox";
 import ProfileMenu from "../layout/ProfileMenu";
+import { useSelector, useDispatch } from "react-redux";
+import { selectUser, selectAuth, logout } from "../../redux/slices/authSlice";
+import { useNavigate } from "react-router-dom";
 
 const GISProfessionalDashboard = () => {
   const theme = useTheme();
@@ -120,7 +123,7 @@ const GISProfessionalDashboard = () => {
   const [compactMode, setCompactMode] = useState(true);
 
   // Compact sidebar width for more map space
-  const leftDrawerWidth = 250; // Reduced from 280
+  const leftDrawerWidth = 220; // Further reduced for better map visibility
 
   // State for actual WorkingMeasurementMap functionality
   /* The above code is using React hooks to manage state in a functional component. Here is a breakdown
@@ -204,9 +207,11 @@ of what each useState hook is doing: */
   const [historyIndex, setHistoryIndex] = useState(-1);
   const [actionHistory, setActionHistory] = useState([]);
 
-  // User and authentication state
-  const [user] = useState({ username: "Admin" });
-  const [loginTime] = useState(new Date().toISOString());
+  // Redux hooks for user data
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const user = useSelector(selectUser);
+  const { loginTime } = useSelector(selectAuth);
 
   // Street view toggle state
   const [streetViewActive, setStreetViewActive] = useState(false);
@@ -990,9 +995,8 @@ of what each useState hook is doing: */
 
   // Logout handler
   const handleLogout = () => {
-    console.log("User logged out");
-    // Add logout logic here
-    window.location.href = "/";
+    dispatch(logout());
+    navigate("/");
   };
 
   // Map controls toggle handlers
@@ -2137,18 +2141,19 @@ of what each useState hook is doing: */
           </Drawer>
         </Slide>
 
-        {/* Main Map Area - Fixed Size, Unshrinkable */}
+        {/* Main Map Area - Responsive to sidebar */}
         <Box
           component="main"
           sx={{
             position: "fixed",
             top: 64, // Height of navbar
-            left: 0,
+            left: leftSidebarOpen ? leftDrawerWidth : 0,
             right: 0,
             bottom: 0,
             display: "flex",
             zIndex: 1,
             overflow: "hidden",
+            transition: "left 0.3s ease",
           }}
         >
           {/* Enhanced Map with Integrated Search */}
@@ -2184,6 +2189,8 @@ of what each useState hook is doing: */
               elevationChartWidth={elevationChartWidth}
               onElevationDataChange={setElevationData}
               onElevationStatsChange={setElevationStats}
+              userData={user}
+              disableRegionRestrictions={true}
             />
           </Box>
 
@@ -2551,11 +2558,8 @@ of what each useState hook is doing: */
                 sx={{
                   position: "absolute",
                   bottom: 16,
-                  right: leftSidebarOpen ? 16 : 16,
-                  transform: leftSidebarOpen
-                    ? "translateX(-10px)"
-                    : "translateX(0)",
-                  transition: "transform 0.3s ease",
+                  right: 16,
+                  transition: "right 0.3s ease",
                   p: 1.5,
                   bgcolor: darkMode
                     ? "rgba(0, 0, 0, 0.85)"
