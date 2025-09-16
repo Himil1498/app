@@ -1,0 +1,6 @@
+id,uniqueid,networkid,ref-code,name,status,createdon,updatedon,address,contactname,contactno,is-rented,agreement-start-date,agreement-end-date,nature of business,structuretype,UPS,backup,latitude,longitude
+1,POP001,NET001,RC001,Main Tower Site A,Active,2024-01-15,2024-01-20,"123 Main St, City, State 12345",John Smith,555-0123,Yes,2024-01-01,2025-01-01,Telecommunications,Tower,Available,Generator,40.7128,-74.0060
+2,SUBPOP001,NET001,RC002,Sub Tower Site B,Active,2024-01-16,2024-01-22,"456 Oak Ave, City, State 12345",Jane Doe,555-0124,No,,,Internet Services,Building,Available,UPS,40.7589,-73.9851
+3,POP002,NET002,RC003,Regional Hub C,Maintenance,2024-01-17,2024-01-25,"789 Pine Rd, City, State 12345",Mike Johnson,555-0125,Yes,2023-06-01,2024-06-01,Data Center,Tower,Not Available,Generator,40.7831,-73.9712
+4,SUBPOP002,NET002,RC004,Branch Office D,Active,2024-01-18,2024-01-28,"321 Elm St, City, State 12345",Sarah Wilson,555-0126,Yes,2024-02-01,2025-02-01,Office Space,Building,Available,Battery Backup,40.7505,-73.9934
+5,POP003,NET003,RC005,Central Communication Hub,Active,2024-01-19,2024-01-30,"654 Maple Dr, City, State 12345",David Brown,555-0127,No,,,Telecommunications,Tower,Available,Generator,40.7282,-74.0776

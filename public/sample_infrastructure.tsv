@@ -1,0 +1,5 @@
+name	type	status	ref_code	contact_name	contact_no	is_rented	rent_amount	agreement_start_date	agreement_end_date	nature_of_business	structure_type	ups_availability	backup_capacity	latitude	longitude	address
+Mysore Tech Hub	POP	Active	MYS-TECH-001	Arjun Rao	9876501234	Yes	30000	2024-01-10	2024-07-10	Technology Hub	Building	Yes	70	12.2958	76.6394	Infosys Campus Road, Mysore, Karnataka 570006
+Vadodara Industrial	POP	RFS	VAD-IND-002	Meera Shah	9123456780	No	0			Industrial Complex	Ground	Yes	120	22.3072	73.1812	GIDC Estate, Vadodara, Gujarat 390003
+Surat Diamond Hub	POP	Active	SUR-DIA-003	Divya Jain	9988776650	Yes	50000	2024-02-01	2024-08-01	Diamond Trading	Building	Yes	95	21.1702	72.8311	Ring Road, Surat, Gujarat 395002
+Lucknow Government	SPOP	Planning	LUC-GOV-S001	Akhilesh Yadav	9876098760	No	0			Government Services	Tower	Yes	45	26.8467	80.9462	Gomti Nagar, Lucknow, Uttar Pradesh 226010
