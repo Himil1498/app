@@ -213,6 +213,27 @@ of what each useState hook is doing: */
   const user = useSelector(selectUser);
   const { loginTime } = useSelector(selectAuth);
 
+  // Sync Redux user into localStorage for map region enforcement (WorkingMeasurementMap reads from localStorage)
+  useEffect(() => {
+    try {
+      if (user) {
+        const normalizedUser = {
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          isAdmin: user.isAdmin || (user.role?.toLowerCase?.() === "admin"),
+          regions: user.regions || [],
+          permissions: user.permissions || {},
+        };
+        localStorage.setItem("currentUser", JSON.stringify(normalizedUser));
+      } else {
+        localStorage.removeItem("currentUser");
+      }
+    } catch (e) {
+      console.warn("Failed to sync currentUser to localStorage:", e);
+    }
+  }, [user]);
+
   // Street view toggle state
   const [streetViewActive, setStreetViewActive] = useState(false);
 
@@ -2190,7 +2211,7 @@ of what each useState hook is doing: */
               onElevationDataChange={setElevationData}
               onElevationStatsChange={setElevationStats}
               userData={user}
-              disableRegionRestrictions={true}
+              disableRegionRestrictions={false}
             />
           </Box>
 

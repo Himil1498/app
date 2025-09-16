@@ -31,14 +31,27 @@ export const calculateCombinedBounds = (regions = []) => {
   let hasBounds = false;
 
   regions.forEach(region => {
-    if (region.bounds && Array.isArray(region.bounds) && region.bounds.length === 2) {
+    // Rectangle bounds
+    if (region?.bounds && Array.isArray(region.bounds) && region.bounds.length === 2) {
       const [[lat1, lng1], [lat2, lng2]] = region.bounds;
-      
       minLat = Math.min(minLat, lat1, lat2);
       maxLat = Math.max(maxLat, lat1, lat2);
       minLng = Math.min(minLng, lng1, lng2);
       maxLng = Math.max(maxLng, lng1, lng2);
       hasBounds = true;
+    }
+
+    // Polygon bounds (array of {lat, lng})
+    if (Array.isArray(region?.polygonPaths) && region.polygonPaths.length >= 3) {
+      region.polygonPaths.forEach(pt => {
+        if (typeof pt?.lat === 'number' && typeof pt?.lng === 'number') {
+          minLat = Math.min(minLat, pt.lat);
+          maxLat = Math.max(maxLat, pt.lat);
+          minLng = Math.min(minLng, pt.lng);
+          maxLng = Math.max(maxLng, pt.lng);
+          hasBounds = true;
+        }
+      });
     }
   });
 
@@ -142,28 +155,57 @@ export const getOptimalZoom = (regions = []) => {
  */
 export const isCoordinateAccessible = (coordinates, user) => {
   if (!user || !coordinates) return false;
-  
+
   // Admin can access everywhere
   if (user.isAdmin) return true;
-  
+
   // Users with Bharat access can access everywhere in India
   if (user.regions?.some(r => r.id === 'bharat')) return true;
-  
+
+  // Normalize user regions (support legacy string arrays)
+  const regions = Array.isArray(user.regions)
+    ? user.regions.map(r => {
+        if (typeof r === 'string') {
+          return { id: r.toLowerCase().replace(/\s+/g, ''), name: r };
+        }
+        return r;
+      })
+    : [];
+
   // Check if coordinates fall within any of user's regions
-  return user.regions?.some(region => {
-    if (!region.bounds) return false;
-    
-    const [[lat1, lng1], [lat2, lng2]] = region.bounds;
-    const minLat = Math.min(lat1, lat2);
-    const maxLat = Math.max(lat1, lat2);
-    const minLng = Math.min(lng1, lng2);
-    const maxLng = Math.max(lng1, lng2);
-    
-    return coordinates.lat >= minLat && 
-           coordinates.lat <= maxLat && 
-           coordinates.lng >= minLng && 
-           coordinates.lng <= maxLng;
-  }) || false;
+  return regions.some(region => {
+    // Polygon-based region
+    if (Array.isArray(region?.polygonPaths) && region.polygonPaths.length >= 3) {
+      try {
+        if (typeof window !== 'undefined' && window.google?.maps?.geometry?.poly) {
+          const point = new window.google.maps.LatLng(coordinates.lat, coordinates.lng);
+          const path = region.polygonPaths.map(p => new window.google.maps.LatLng(p.lat, p.lng));
+          return window.google.maps.geometry.poly.containsLocation(point, new window.google.maps.Polygon({ paths: path }));
+        }
+      } catch (_) {
+        // fall-through to manual check
+      }
+      // Fallback manual point-in-polygon check
+      return pointInPolygon(coordinates, region.polygonPaths);
+    }
+
+    // Rectangle bounds region
+    if (region?.bounds && Array.isArray(region.bounds) && region.bounds.length === 2) {
+      const [[lat1, lng1], [lat2, lng2]] = region.bounds;
+      const minLat = Math.min(lat1, lat2);
+      const maxLat = Math.max(lat1, lat2);
+      const minLng = Math.min(lng1, lng2);
+      const maxLng = Math.max(lng1, lng2);
+      return (
+        coordinates.lat >= minLat &&
+        coordinates.lat <= maxLat &&
+        coordinates.lng >= minLng &&
+        coordinates.lng <= maxLng
+      );
+    }
+
+    return false;
+  });
 };
 
 /**
@@ -174,24 +216,34 @@ export const isCoordinateAccessible = (coordinates, user) => {
  */
 export const getRegionForCoordinates = (coordinates, allRegions = []) => {
   if (!coordinates || !allRegions.length) return null;
-  
+
   for (const region of allRegions) {
-    if (!region.bounds) continue;
-    
-    const [[lat1, lng1], [lat2, lng2]] = region.bounds;
-    const minLat = Math.min(lat1, lat2);
-    const maxLat = Math.max(lat1, lat2);
-    const minLng = Math.min(lng1, lng2);
-    const maxLng = Math.max(lng1, lng2);
-    
-    if (coordinates.lat >= minLat && 
-        coordinates.lat <= maxLat && 
-        coordinates.lng >= minLng && 
-        coordinates.lng <= maxLng) {
-      return region.name;
+    // Polygon first
+    if (Array.isArray(region?.polygonPaths) && region.polygonPaths.length >= 3) {
+      if (pointInPolygon(coordinates, region.polygonPaths)) {
+        return region.name || region.id;
+      }
+    }
+
+    // Then rectangle bounds
+    if (region?.bounds) {
+      const [[lat1, lng1], [lat2, lng2]] = region.bounds;
+      const minLat = Math.min(lat1, lat2);
+      const maxLat = Math.max(lat1, lat2);
+      const minLng = Math.min(lng1, lng2);
+      const maxLng = Math.max(lng1, lng2);
+
+      if (
+        coordinates.lat >= minLat &&
+        coordinates.lat <= maxLat &&
+        coordinates.lng >= minLng &&
+        coordinates.lng <= maxLng
+      ) {
+        return region.name || region.id;
+      }
     }
   }
-  
+
   return null;
 };
 
@@ -267,3 +319,22 @@ export const calculateDistance = (coord1, coord2) => {
  * @returns {number} - Radians
  */
 const toRadians = (degrees) => degrees * (Math.PI / 180);
+
+/**
+ * Ray-casting implementation for point in polygon
+ * @param {{lat:number,lng:number}} point
+ * @param {{lat:number,lng:number}[]} polygon
+ * @returns {boolean}
+ */
+export const pointInPolygon = (point, polygon = []) => {
+  if (!point || !Array.isArray(polygon) || polygon.length < 3) return false;
+  let inside = false;
+  for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+    const xi = polygon[i].lng, yi = polygon[i].lat;
+    const xj = polygon[j].lng, yj = polygon[j].lat;
+    const intersect = ((yi > point.lat) !== (yj > point.lat)) &&
+      (point.lng < (xj - xi) * (point.lat - yi) / (yj - yi + 0.0) + xi);
+    if (intersect) inside = !inside;
+  }
+  return inside;
+};

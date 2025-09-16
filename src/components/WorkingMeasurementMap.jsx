@@ -86,6 +86,7 @@ import {
 } from "@mui/icons-material";
 import useIndiaBoundary from "../hooks/useIndiaBoundary";
 import AddLocationForm from "./common/AddLocationForm";
+import { createRegionOverlays, isCoordinateAccessible } from "../utils/indiaStatesUtils";
 
 // Add CSS keyframes for animations
 const animationKeyframes = `
@@ -131,6 +132,16 @@ if (
  * @param {Function} props.onPointsChange - Callback for points changes
  * @param {Function} props.onPolygonPointsChange - Callback for polygon points changes
  */
+// Helper to get current logged-in user (with assigned regions)
+const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem('currentUser');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 const WorkingMeasurementMap = React.forwardRef(
   (
     {
@@ -197,6 +208,10 @@ const WorkingMeasurementMap = React.forwardRef(
     const [distanceLabels, setDistanceLabels] = useState([]);
     const [streetViewOpen, setStreetViewOpen] = useState(false);
     const [streetViewPosition, setStreetViewPosition] = useState(null);
+
+// Region restriction state
+const [userRegionPolygons, setUserRegionPolygons] = useState([]);
+const [regionEnforcementEnabled, setRegionEnforcementEnabled] = useState(true);
 
     // Polygon drawing state
     const [drawingMode, setDrawingMode] = useState("distance"); // 'distance' or 'polygon'
@@ -638,6 +653,36 @@ const WorkingMeasurementMap = React.forwardRef(
       loadMap();
     }, []);
 
+    // Enhanced draw user's assigned regions using India states data
+    const drawUserRegions = async (mapInstance) => {
+      try {
+        // Clear previous overlays
+        userRegionPolygons.forEach(p => p?.setMap && p.setMap(null));
+
+        const user = getCurrentUser();
+        if (!user || user.isAdmin || !Array.isArray(user.regions) || user.regions.length === 0) {
+          setUserRegionPolygons([]);
+          return;
+        }
+
+        // Use enhanced region overlay creation with India states data
+        const overlays = await createRegionOverlays(user.regions, mapInstance, {
+          strokeColor: '#1976D2',
+          strokeOpacity: 0.9,
+          strokeWeight: 2,
+          fillColor: '#1976D2',
+          fillOpacity: 0.08,
+          zIndex: 10,
+        });
+
+        setUserRegionPolygons(overlays);
+        addLog(`✅ Drew ${overlays.length} region overlays for user ${user.username}`);
+      } catch (e) {
+        addLog(`⚠️ Failed to draw user regions: ${e.message}`);
+        console.error('Error drawing user regions:', e);
+      }
+    };
+
     // EXACT SAME INITIALIZATION AS SIMPLEMAPTEST
     const initializeMap = () => {
       if (!mapRef.current || !window.google) {
@@ -672,7 +717,7 @@ const WorkingMeasurementMap = React.forwardRef(
               west: 68.1,
               east: 97.4,
             },
-            strictBounds: false,
+            strictBounds: true,
           },
           // Hide default controls for cleaner interface
           streetViewControl: false,
@@ -688,6 +733,9 @@ const WorkingMeasurementMap = React.forwardRef(
         setLoaded(true);
         addLog("✅ Map initialized successfully");
         addNotification("Map loaded successfully!", "success");
+
+        // Highlight assigned regions for current user
+        drawUserRegions(mapInstance);
 
         // Add listeners for live coordinates tracking
         if (onCoordinatesChange || onZoomChange) {
@@ -790,9 +838,24 @@ const WorkingMeasurementMap = React.forwardRef(
 
       // Add click listener with India boundary check
       addLog("👂 Adding map click listener...");
-      clickListenerRef.current = map.addListener("click", (event) => {
+      clickListenerRef.current = map.addListener("click", async (event) => {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
+
+        // Enhanced region enforcement using India states data
+        try {
+          const user = getCurrentUser();
+          if (regionEnforcementEnabled && user && !user.isAdmin) {
+            const allowed = await isCoordinateAccessible(lat, lng, user.regions);
+            if (!allowed) {
+              addLog("⛔ Click blocked: outside assigned region");
+              addNotification("You do not have permission to access this area.", "warning");
+              return; // Block measurement click handling
+            }
+          }
+        } catch (e) {
+          console.warn('Region enforcement check failed', e);
+        }
 
         addLog(
           `📍 DRAWING CLICK EVENT - Clicked at: ${lat.toFixed(
@@ -1127,9 +1190,24 @@ const WorkingMeasurementMap = React.forwardRef(
 
       // Add click listener for polygon
       addLog("👂 Adding polygon click listener...");
-      clickListenerRef.current = map.addListener("click", (event) => {
+      clickListenerRef.current = map.addListener("click", async (event) => {
         const lat = event.latLng.lat();
         const lng = event.latLng.lng();
+
+        // Enhanced region enforcement for polygon drawing
+        try {
+          const user = getCurrentUser();
+          if (regionEnforcementEnabled && user && !user.isAdmin) {
+            const allowed = await isCoordinateAccessible(lat, lng, user.regions);
+            if (!allowed) {
+              addLog("⛔ Polygon point blocked: outside assigned region");
+              addNotification("You do not have permission to access this area.", "warning");
+              return; // Block polygon point add
+            }
+          }
+        } catch (e) {
+          console.warn('Region enforcement check failed', e);
+        }
 
         addLog(
           `📍 POLYGON CLICK - Clicked at: ${lat.toFixed(4)}, ${lng.toFixed(4)}`
